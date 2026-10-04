@@ -30,5 +30,8 @@ export function reportHTML(name: string, slug: string, results: CheckResult[]): 
     <h2 class="answer ${taken ? 'bad' : 'ok'}">${taken ? 'Taken.' : '<em>Available.</em>'}</h2>
     <p class="why">${why}</p>
     <div class="strip">${rows.map(r => `<button type="button" class="tile" data-jump="${r.check.id}">${mark(r.summary.kind)}<div><div class="k">${r.check.k}</div><div class="v">${esc(r.summary.v)}</div></div></button>`).join('')}</div>
-    <div class="sections">${rows.map(r => section(r.check, r.summary, r.check.sub(slug, name), r.body)).join('')}</div></div>`;
+    <div class="sections">${rows.map(r => section(r.check, r.summary, r.check.sub(slug, name), r.body)).join('')}</div>
+    ${taken
+      ? `<section class="ideas"><h3 class="ideas-h">Try something else</h3><p class="ideas-sub">Other names, already checked. Pick a style.</p><div data-ideas></div></section>`
+      : `<p class="more">Still deciding? <button type="button" data-ideas-link>Get name ideas</button></p>`}</div>`;
 }

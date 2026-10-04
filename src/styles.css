@@ -54,32 +54,32 @@ button,input{font:inherit;color:inherit}
 .prompt em{font-style:italic;color:var(--accent);padding-right:.06em}
 @media (max-width:560px){.prompt{font-size:clamp(30px,8.6vw,40px)}}
 
-.search{width:100%;max-width:560px;display:flex;align-items:center;gap:8px;padding:8px 8px 8px 22px;border-radius:999px;
+.search{width:100%;max-width:480px;display:flex;align-items:center;gap:8px;padding:5px 9px 5px 18px;border-radius:999px;
   background:var(--well);border:1px solid var(--well-bd);
   box-shadow:inset 0 2px 3px var(--well-sh),inset 0 0 0 1px var(--well-in),0 1px 0 var(--well-hi);transition:border-color .2s,box-shadow .2s,background .2s}
 .search:focus-within{background:var(--card);border-color:var(--accent);box-shadow:inset 0 2px 3px var(--well-sh),0 0 0 4px var(--accent-soft)}
-.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:17px;height:44px;letter-spacing:-.01em}
+.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:16px;height:36px;letter-spacing:-.01em}
 .search input::placeholder{color:var(--muted-fg)}
-.go{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--fg);color:var(--bg);cursor:pointer;display:grid;place-items:center;
+.go{width:28px;height:28px;flex:none;border-radius:50%;border:0;background:var(--fg);color:var(--bg);cursor:pointer;display:grid;place-items:center;
   box-shadow:0 1px 2px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.14);transition:transform .15s,opacity .15s,background .2s}
 .go:hover{opacity:.88}.go:active{transform:scale(.94)}
 .search:focus-within .go{background:var(--accent);color:#fff}
-.go svg{transition:transform .2s}.go:hover svg{transform:translateX(2px)}
+.go svg{width:14px;height:14px;transition:transform .2s}.go:hover svg{transform:translateX(2px)}
 .hint{color:var(--muted-fg);font-size:13px}
 .hint button{border:0;background:none;padding:0;cursor:pointer;color:var(--fg);text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
 .hint button:hover{text-decoration-color:var(--accent)}
 .checks-line{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;color:var(--muted-fg);font-size:12px;letter-spacing:.02em}
 .checks-line span{display:inline-flex;align-items:center;gap:6px}
-.checks-line i{width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.checks-line svg{width:15px;height:15px;flex:none;color:var(--accent)}
 
 /* ---------- top bar ---------- */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:16px;padding-block:14px;margin-inline:-20px;padding-inline:20px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .brand{display:flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;flex:none}
 .brand .eyes{width:44px}
 .word{font-family:var(--serif);font-size:26px;letter-spacing:-.03em;line-height:1}
-.bar .search{flex:1 1 auto;width:auto;min-width:0;max-width:420px;margin-left:auto;padding:5px 5px 5px 16px}
+.bar .search{flex:1 1 auto;width:auto;min-width:0;max-width:420px;margin-left:auto;padding:5px 9px 5px 16px}
 .bar .search input{height:34px;font-size:15px}
-.bar .go{width:34px;height:34px}.bar .go svg{width:15px;height:15px}
+.bar .go{width:26px;height:26px}.bar .go svg{width:13px;height:13px}
 @media (max-width:560px){.bar .word{display:none}}
 
 /* ---------- results ---------- */
@@ -166,6 +166,37 @@ tr:last-child td{border-bottom:0}
 .tm-app{font-family:var(--mono);color:var(--muted-fg);font-size:12px}
 .nowrap{white-space:nowrap}
 .empty{border:1px dashed var(--border-strong);border-radius:12px;padding:20px;text-align:center;color:var(--muted-fg)}
+
+/* ---------- name ideas ---------- */
+.ideas{margin-top:44px}
+.ideas-h{font-family:var(--serif);font-weight:400;font-size:clamp(30px,5vw,40px);letter-spacing:-.035em;line-height:1.05;margin:0}
+.ideas-sub{color:var(--muted-fg);margin:6px 0 18px}
+.ideas-page{display:flex;flex-direction:column;gap:20px}
+.ideas-page .scan-title{margin:0}
+.more{color:var(--muted-fg);font-size:13px;margin:24px 0 0}
+.more button{border:0;background:none;padding:0;cursor:pointer;color:var(--fg);text-decoration:underline;text-decoration-color:var(--border-strong);text-underline-offset:3px}
+.more button:hover{text-decoration-color:var(--accent)}
+
+.styles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.style{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--card);cursor:pointer;transition:border-color .2s,background .2s}
+.style:hover{border-color:var(--border-strong)}
+.style .ex{font-family:var(--serif);font-size:26px;letter-spacing:-.03em;line-height:1.1;color:var(--muted-fg);transition:color .2s}
+.style .lb{font-size:12px;color:var(--muted-fg)}
+.style[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.style[aria-pressed="true"] .ex{color:var(--fg);font-style:italic}
+.style[aria-pressed="true"] .lb{color:var(--fg)}
+@media (max-width:640px){.styles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.sugs{display:flex;flex-direction:column;margin-top:10px;min-height:120px}
+.sug{width:100%;display:flex;align-items:center;gap:14px;padding:14px 4px;background:none;border:0;border-bottom:1px solid var(--border);text-align:left;cursor:pointer}
+.sug .main{flex:1;min-width:0;display:flex;flex-direction:column}
+.sug .nm{font-family:var(--serif);font-size:30px;letter-spacing:-.03em;line-height:1.1;overflow-wrap:anywhere;transition:color .2s}
+.sug .or{font-size:13px;color:var(--muted-fg)}
+.sug:hover .nm{color:var(--accent)}
+.dots{display:flex;gap:5px;flex:none}
+.dot{width:8px;height:8px;border-radius:50%}
+.d-ok{background:var(--ok)}.d-warn{background:var(--warn)}.d-bad{background:var(--bad)}
+.sug-wait{display:flex;align-items:center;gap:12px;padding:18px 4px;color:var(--muted-fg)}
 
 footer{color:var(--muted-fg);font-size:12px;text-align:center;padding-block:20px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}

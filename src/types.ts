@@ -62,3 +62,11 @@ export interface FetchOptions {
   /** Skip simulated latency (used for reduced motion) */
   instant?: boolean;
 }
+
+export type NameStyle = 'latin' | 'everyday' | 'borrowed' | 'invented';
+
+export interface Suggestion {
+  name: string;
+  /** One line on where the name comes from */
+  origin: string;
+}

@@ -1,8 +1,15 @@
 import './styles.css';
+// Tabler has no filled "at" icon
+import iconAt from '@tabler/icons/outline/at.svg?raw';
+import iconSearch from '@tabler/icons/filled/search.svg?raw';
+import iconTrademark from '@tabler/icons/filled/registered.svg?raw';
+import iconWorld from '@tabler/icons/filled/world.svg?raw';
 import { CHECKS, type CheckResult } from './checks';
 import { blink, mountEyes, setBusy } from './eyes';
 import { mark } from './html';
+import { DEFAULT_STYLE, ideasPageHTML, isStyle, mountIdeas } from './ideas';
 import { slugify } from './mock';
+import type { NameStyle } from './types';
 import { reportHTML, scanHTML } from './views';
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string): T => {
@@ -17,6 +24,12 @@ const home = $('#home'), app = $('#app'), results = $('#results');
 const q1 = $<HTMLInputElement>('#q1'), q2 = $<HTMLInputElement>('#q2');
 
 mountEyes();
+
+const ICONS: Record<string, string> = {at: iconAt, search: iconSearch, trademark: iconTrademark, world: iconWorld};
+document.querySelectorAll<HTMLElement>('[data-icon]').forEach(el => {
+  const svg = ICONS[el.dataset.icon ?? ''];
+  if (svg) el.outerHTML = svg.replace('<svg', '<svg aria-hidden="true"');
+});
 
 /* ---------- prompt cycle ---------- */
 const spans = [...document.querySelectorAll<HTMLElement>('#prompt span')];
@@ -77,11 +90,44 @@ async function check(raw: string, {push = true} = {}): Promise<void> {
   if (id !== run) return;
   setBusy(false); blink();
   results.innerHTML = reportHTML(name, slug, done);
+  const slot = results.querySelector<HTMLElement>('[data-ideas]');
+  if (slot) mountIdeas(slot, name, {onPick: picked => void check(picked)});
+}
+
+const ideasURL = (seed: string, style: NameStyle) =>
+  `?ideas=${encodeURIComponent(seed)}${style === DEFAULT_STYLE ? '' : `&style=${style}`}`;
+
+function showIdeas(rawSeed: string, style: NameStyle = DEFAULT_STYLE, {push = true} = {}): void {
+  const seed = slugify(rawSeed) ? rawSeed.trim() : '';
+  run++; setBusy(false);
+  if (push) history.pushState(null, '', ideasURL(seed, style));
+  document.title = seed ? `Name ideas for ${seed} · Wiskr` : 'Name ideas · Wiskr';
+
+  home.hidden = true; app.hidden = false;
+  q2.value = '';
+  results.innerHTML = ideasPageHTML(seed);
+  window.scrollTo(0, 0);
+
+  const input = $<HTMLInputElement>('#seed');
+  let current = style;
+  $('#seed-form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (slugify(input.value)) showIdeas(input.value, current);
+  });
+  if (!seed) { input.focus(); return; }
+  mountIdeas(results.querySelector<HTMLElement>('[data-ideas]')!, seed, {
+    style,
+    onPick: picked => void check(picked),
+    onStyle: next => { current = next; history.replaceState(null, '', ideasURL(seed, next)); },
+  });
 }
 
 function route(): void {
-  const q = new URLSearchParams(location.search).get('q');
-  if (q && slugify(q)) void check(q, {push: false}); else showHome();
+  const params = new URLSearchParams(location.search);
+  const q = params.get('q'), ideas = params.get('ideas'), style = params.get('style');
+  if (q && slugify(q)) void check(q, {push: false});
+  else if (ideas !== null) showIdeas(ideas, isStyle(style) ? style : DEFAULT_STYLE, {push: false});
+  else showHome();
 }
 
 /* ---------- events ---------- */
@@ -93,6 +139,7 @@ results.addEventListener('click', e => {
   const target = e.target as Element;
   const h = target.closest('.sec-h');
   if (h) { setOpen(h.closest('.sec')!, h.getAttribute('aria-expanded') !== 'true'); return; }
+  if (target.closest('[data-ideas-link]')) { showIdeas(''); return; }
   const t = target.closest<HTMLElement>('[data-jump]');
   const s = t?.dataset.jump ? document.getElementById(t.dataset.jump) : null;
   if (s) {
@@ -107,6 +154,7 @@ document.querySelectorAll<HTMLElement>('[data-ex]').forEach(b => b.addEventListe
   const ex = b.dataset.ex ?? '';
   q1.value = ex; void check(ex);
 }));
+$('#ideas-btn').addEventListener('click', () => showIdeas(''));
 $('#home-btn').addEventListener('click', () => { history.pushState(null, '', location.pathname); showHome(); });
 addEventListener('popstate', route);
 

@@ -13,17 +13,17 @@ const PLATFORMS: [ico: string, label: string, url: (slug: string) => string][] =
 ];
 const TM_STATUSES: Trademark['status'][] = ['Registered','Registered','Formalized','Abandoned','Searched'];
 
-type Rng = () => number;
+export type Rng = () => number;
 
 export const slugify = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-function hash(s: string): number {
+export function hash(s: string): number {
   let h = 2166136261;
   for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
 
-function rng(seed: number): Rng {
+export function rng(seed: number): Rng {
   let a = seed;
   return () => {
     a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -33,7 +33,7 @@ function rng(seed: number): Rng {
   };
 }
 
-const pick = <T>(r: Rng, arr: readonly T[]): T => arr[Math.floor(r() * arr.length)] as T;
+export const pick = <T>(r: Rng, arr: readonly T[]): T => arr[Math.floor(r() * arr.length)] as T;
 
 export function simulate(raw: string): Report {
   const name = raw.trim();

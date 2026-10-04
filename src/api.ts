@@ -2,9 +2,11 @@
 // mock.ts with simulated latency. Swap a function body for a real fetch() to go live.
 
 import { simulate, slugify } from './mock';
-import type { Domain, FetchOptions, GoogleResult, Report, Social, TrademarkResult } from './types';
+import { suggestNames } from './mock-names';
+import type { Domain, FetchOptions, GoogleResult, NameStyle, Report, Social, Suggestion, TrademarkResult } from './types';
 
 const LATENCY: Record<keyof Report, number> = {trademarks: 550, domains: 970, socials: 1390, google: 1810};
+const SUGGEST_LATENCY = 700;
 
 const cache = new Map<string, Report>();
 function report(name: string): Report {
@@ -27,4 +29,9 @@ export const api = {
   domains: (name: string, opts?: FetchOptions): Promise<Domain[]> => mock('domains', name, opts),
   socials: (name: string, opts?: FetchOptions): Promise<Social[]> => mock('socials', name, opts),
   google: (name: string, opts?: FetchOptions): Promise<GoogleResult> => mock('google', name, opts),
+  /** Name ideas for a seed (what the startup does, or a name to riff on) in one naming style */
+  async suggest(seed: string, style: NameStyle, {instant = false}: FetchOptions = {}): Promise<Suggestion[]> {
+    if (!instant) await sleep(SUGGEST_LATENCY);
+    return suggestNames(seed, style);
+  },
 };

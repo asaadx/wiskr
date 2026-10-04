@@ -12,5 +12,8 @@
   "devDependencies": {
     "typescript": "^7.0.2",
     "vite": "^8.3.2"
+  },
+  "dependencies": {
+    "@tabler/icons": "^3.48.0"
   }
 }

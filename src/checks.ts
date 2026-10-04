@@ -141,3 +141,9 @@ export const CHECKS: Check[] = [
     },
     body: googleHTML}),
 ];
+
+/** Runs every check for a name without the detail views. `summaries` is index-aligned with CHECKS. */
+export async function vet(name: string, opts?: FetchOptions): Promise<{summaries: Summary[]; taken: boolean}> {
+  const summaries = (await Promise.all(CHECKS.map(c => c.run(name, opts)))).map(r => r.summary);
+  return {summaries, taken: summaries.some(s => s.kind === 'bad')};
+}
