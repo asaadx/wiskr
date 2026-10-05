@@ -1,24 +1,6 @@
-// The cat eyes: markup plus idle / busy behaviour.
+// The cat eyes: idle / busy behaviour.
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-let eyeN = 0;
-function eyesSVG(): string {
-  const n = eyeN++;
-  return `<svg class="eyes" viewBox="0 0 120 48" aria-hidden="true">
-    ${[32, 88].map(cx => {
-      const lid = `M${cx - 24} 24 Q${cx} -2 ${cx + 24} 24 Q${cx} 50 ${cx - 24} 24 Z`;
-      return `<g class="eye">
-      <clipPath id="c${cx}${n}"><path d="${lid}"/></clipPath>
-      <path class="lid" d="${lid}"/>
-      <g clip-path="url(#c${cx}${n})">
-        <circle class="iris" cx="${cx}" cy="24" r="15"/>
-        <g class="look"><ellipse class="pupil" cx="${cx}" cy="24" rx="3.4" ry="12.5" style="transform-box:fill-box;transform-origin:center"/>
-        <circle class="shine" cx="${cx + 5}" cy="18" r="2.4"/></g>
-      </g>
-      <path d="${lid}" fill="none" stroke="var(--fg)" stroke-width="1.6"/>
-    </g>`;}).join('')}</svg>`;
-}
 
 const all = () => document.querySelectorAll<SVGSVGElement>('.eyes');
 
@@ -47,7 +29,7 @@ export function setBusy(on: boolean): void {
   else look(0);
 }
 
-export function mountEyes(): void {
-  document.querySelectorAll('[data-eyes]').forEach(el => { el.outerHTML = eyesSVG(); });
+/** The eyes themselves are static markup in index.html, so they are there on first paint. */
+export function startEyes(): void {
   if (!reduce) setTimeout(idle, 1600);
 }

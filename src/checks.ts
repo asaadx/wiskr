@@ -1,36 +1,28 @@
 // The four checks: how each one is fetched, summarised and rendered in detail.
 
 import { api } from './api';
+import { brandIcon } from './brand-icons';
 import { badge, esc } from './html';
+import { registrarLink } from './registrars';
 import type { Domain, FetchOptions, GoogleResult, Kind, Social, TrademarkResult } from './types';
 
 export interface Summary {
   kind: Kind;
-  /** Tile value */
+  /** Short result shown on the check's row */
   v: string;
   /** Clause used in the verdict sentence */
   why: string;
-  /** Result shown on the scan row */
-  res: string;
-  /** Section badge text */
-  badge: string;
 }
 
 export interface CheckResult {
   summary: Summary;
-  /** Detail section body HTML */
+  /** Detail HTML, shown when the row is opened */
   body: string;
 }
 
 interface CheckMeta {
   key: string;
-  id: string;
-  /** Tile label */
-  k: string;
-  /** Scan row label */
-  step: string;
-  title: string;
-  sub: (slug: string, name: string) => string;
+  label: string;
 }
 
 export interface Check extends CheckMeta {
@@ -65,7 +57,7 @@ function tmHTML(tm: TrademarkResult, name: string): string {
 }
 
 function domainPrice(x: Domain): string {
-  if (x.status === 'available') return `$${x.price.toFixed(2)}/yr`;
+  if (x.status === 'available') return `from $${x.price.toFixed(2)}/yr`;
   if (x.status === 'premium' && x.premium !== null) return `$${x.premium.toLocaleString()}`;
   return '—';
 }
@@ -73,12 +65,13 @@ function domainPrice(x: Domain): string {
 function domainsHTML(domains: Domain[]): string {
   return `<div class="rows">${domains.map(x => `<div class="row">
     <div class="main"><div class="t mono">${esc(x.name)}</div></div>
+    ${x.registrars.length ? `<span class="regs">${x.registrars.map(id => registrarLink(id, x.name)).join('')}</span>` : ''}
     <span class="price">${domainPrice(x)}</span>
     ${x.status === 'available' ? badge('ok','Available') : x.status === 'premium' ? badge('warn','For sale') : badge('bad','Taken')}</div>`).join('')}</div>`;
 }
 
 function socialsHTML(socials: Social[]): string {
-  return `<div class="rows">${socials.map(s => `<div class="row"><div class="ico">${s.ico}</div>
+  return `<div class="rows">${socials.map(s => `<div class="row"><div class="ico">${brandIcon(s.platform)}</div>
     <div class="main"><div class="t">${s.label}</div><div class="m mono">${esc(s.url)}</div>${s.meta ? `<div class="m">${s.meta}${s.alt ? ` · try <span class="mono">@${esc(s.alt)}</span>` : ''}</div>` : ''}</div>
     ${s.status === 'available' ? badge('ok','Available') : s.status === 'inactive' ? badge('warn','Inactive') : badge('bad','Taken')}</div>`).join('')}</div>`;
 }
@@ -98,52 +91,45 @@ function googleHTML(g: GoogleResult): string {
 
 /* ---------- checks ---------- */
 export const CHECKS: Check[] = [
-  defineCheck<TrademarkResult>({key:'trademarks', id:'s-tm', k:'Trademark', step:'Searching Canadian trademarks',
-    title:'Canadian trademarks', sub:() => 'CIPO Trademarks Database · exact and similar marks',
+  defineCheck<TrademarkResult>({key: 'trademarks', label: 'Trademarks',
     fetch: api.trademarks,
     summarize(tm) {
       const n = tm.live;
-      return {kind: n ? 'bad' : 'ok', v: n ? `${n} active in Canada` : 'No conflicts',
-        why: `${n} active Canadian trademark${plural(n)}`,
-        res: n ? `${n} found` : 'none found', badge: n ? `${n} conflict${plural(n)}` : 'Clear'};
+      return {kind: n ? 'bad' : 'ok', v: n ? `${n} active in Canada` : 'No conflicts in Canada',
+        why: `${n} active Canadian trademark${plural(n)}`};
     },
     body: tmHTML}),
-  defineCheck<Domain[]>({key:'domains', id:'s-dom', k:'Domain', step:'Looking up domains',
-    title:'Domains', sub:() => 'Common extensions, CAD pricing',
+  defineCheck<Domain[]>({key: 'domains', label: 'Domains',
     fetch: api.domains,
     summarize(domains) {
-      const com = domains[0]!, f = free(domains);
+      const com = domains[0]!;
       const state = com.status === 'available' ? 'is free' : com.status === 'premium' ? 'is for sale' : 'is taken';
       return {kind: com.status === 'available' ? 'ok' : com.status === 'premium' ? 'warn' : 'bad',
-        v: `${com.name} ${state}`, why: `${com.name} ${state}`,
-        res: `${f}/${domains.length} free`, badge: `${f}/${domains.length}`};
+        v: `${com.name} ${state}`, why: `${com.name} ${state}`};
     },
     body: domainsHTML}),
-  defineCheck<Social[]>({key:'socials', id:'s-soc', k:'Handles', step:'Checking six social handles',
-    title:'Social handles', sub:slug => `@${esc(slug)} on six platforms`,
+  defineCheck<Social[]>({key: 'socials', label: 'Social handles',
     fetch: api.socials,
     summarize(socials) {
       const f = free(socials), n = socials.length;
       return {kind: f >= 5 ? 'ok' : f >= 3 ? 'warn' : 'bad', v: `${f} of ${n} free`,
-        why: f >= 3 ? `only ${f} of ${n} handles free` : 'most social handles are taken',
-        res: `${f}/${n} free`, badge: `${f}/${n}`};
+        why: f >= 3 ? `only ${f} of ${n} handles free` : 'most social handles are taken'};
     },
     body: socialsHTML}),
-  defineCheck<GoogleResult>({key:'google', id:'s-g', k:'Google', step:'Reading Google results',
-    title:'Google search', sub:(_slug, name) => `Top results for “${esc(name)}”`,
+  defineCheck<GoogleResult>({key: 'google', label: 'Search engine',
     fetch: api.google,
     summarize(g) {
       const b = brandCount(g), crowded = b >= 4 || !!g.sponsored;
-      const v = crowded ? 'Crowded' : b ? 'Some overlap' : 'Wide open';
-      return {kind: crowded ? 'bad' : b ? 'warn' : 'ok', v,
-        why: crowded ? 'a crowded Google results page' : 'some overlap in Google results',
-        res: v.toLowerCase(), badge: v};
+      return {kind: crowded ? 'bad' : b ? 'warn' : 'ok', v: crowded ? 'Crowded' : b ? 'Some overlap' : 'Wide open',
+        why: crowded ? 'crowded search results' : 'some overlap in search results'};
     },
     body: googleHTML}),
 ];
 
-/** Runs every check for a name without the detail views. `summaries` is index-aligned with CHECKS. */
-export async function vet(name: string, opts?: FetchOptions): Promise<{summaries: Summary[]; taken: boolean}> {
-  const summaries = (await Promise.all(CHECKS.map(c => c.run(name, opts)))).map(r => r.summary);
-  return {summaries, taken: summaries.some(s => s.kind === 'bad')};
+/** A name is taken when any check comes back bad. */
+export const isTaken = (summaries: Summary[]): boolean => summaries.some(s => s.kind === 'bad');
+
+/** Runs every check for a name and reports only whether it is taken. */
+export async function vet(name: string, opts?: FetchOptions): Promise<boolean> {
+  return isTaken((await Promise.all(CHECKS.map(c => c.run(name, opts)))).map(r => r.summary));
 }

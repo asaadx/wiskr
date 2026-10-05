@@ -12,14 +12,14 @@ npm run build      # typecheck, then build to dist/
 npm run preview    # serve the production build
 ```
 
-Results are linkable: `/?q=Lumora`. So are name ideas: `/?ideas=payments&style=borrowed`.
+Everything happens on one screen: answers stack above the field, chat style. Links still work: `/?q=Lumora`, `/?ideas=payments&style=borrowed`.
 
 ## Structure
 
 - `index.html` — markup
-- `src/main.ts` — routing, search flow, events
+- `src/main.ts` — the thread, input modes, events
 - `src/checks.ts` — the four checks: fetch, summary, detail markup
-- `src/views.ts` — scanning view and final report
+- `src/views.ts` — thread and answer markup
 - `src/ideas.ts` — name ideas: style picker and pre-checked suggestions
 - `src/eyes.ts` — the cat eyes
 - `src/api.ts` — data layer: one async function per check (trademarks, domains, socials, google), plus `suggest`

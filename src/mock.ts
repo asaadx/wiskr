@@ -1,15 +1,16 @@
 // Deterministic mock data: the same name always produces the same report.
 
-import type { Domain, OrganicHit, Report, SearchHit, Social, Trademark } from './types';
+import { registrarsFor } from './registrars';
+import type { Domain, OrganicHit, Platform, Report, SearchHit, Social, Trademark } from './types';
 
 const COMMON = ['nova','apex','pulse','orbit','spark','flow','zen','core','bloom','echo','atlas','luna','vibe','nest','sync','loop','leaf','wave','pixel','swift'];
 const INDUSTRIES = ['Fintech','Skincare','Analytics SaaS','Pet food','Edtech','Design agency','Fitness app','Coffee roaster','HR software','Real estate'];
 const NICE_CLASSES: [number, string][] = [[9,'Software & electronics'],[35,'Advertising & business'],[36,'Financial services'],[41,'Education & entertainment'],[42,'SaaS & technology services'],[3,'Cosmetics'],[25,'Clothing']];
 const TLDS: [string, number][] = [['.com',12.99],['.ca',14.99],['.io',39.99],['.ai',79.99],['.co',24.99],['.app',16.99]];
-const PLATFORMS: [ico: string, label: string, url: (slug: string) => string][] = [
-  ['X','X (Twitter)', s => `x.com/${s}`],['IG','Instagram', s => `instagram.com/${s}`],
-  ['TT','TikTok', s => `tiktok.com/@${s}`],['in','LinkedIn', s => `linkedin.com/company/${s}`],
-  ['GH','GitHub', s => `github.com/${s}`],['YT','YouTube', s => `youtube.com/@${s}`],
+const PLATFORMS: [platform: Platform, label: string, url: (slug: string) => string][] = [
+  ['x','X (Twitter)', s => `x.com/${s}`],['instagram','Instagram', s => `instagram.com/${s}`],
+  ['tiktok','TikTok', s => `tiktok.com/@${s}`],['linkedin','LinkedIn', s => `linkedin.com/company/${s}`],
+  ['github','GitHub', s => `github.com/${s}`],['youtube','YouTube', s => `youtube.com/@${s}`],
 ];
 const TM_STATUSES: Trademark['status'][] = ['Registered','Registered','Formalized','Abandoned','Searched'];
 
@@ -47,11 +48,11 @@ export function simulate(raw: string): Report {
   common = Math.max(0.05, Math.min(0.95, common + (r() - .5) * .25));
   const taken = () => r() < common;
 
-  const socials: Social[] = PLATFORMS.map(([ico, label, url]) => {
+  const socials: Social[] = PLATFORMS.map(([platform, label, url]) => {
     const t = taken();
     const alt = t ? pick(r, [`${slug}hq`, `get${slug}`, `${slug}app`, `try${slug}`, `${slug}.co`]) : null;
     const inactive = t && r() < .35;
-    return {ico, label, url: url(slug), status: t ? (inactive ? 'inactive' : 'taken') : 'available', alt,
+    return {platform, label, url: url(slug), status: t ? (inactive ? 'inactive' : 'taken') : 'available', alt,
       meta: t ? (inactive ? `Last post ${1 + Math.floor(r() * 6)} yrs ago · may be claimable` : `${(r() * 90 + .4).toFixed(1)}k followers`) : ''};
   });
 
@@ -89,7 +90,7 @@ export function simulate(raw: string): Report {
     let status: Domain['status'] = t === '.com' ? (r() < common + .15 ? 'taken' : 'available') : (taken() ? 'taken' : 'available');
     let premium: number | null = null;
     if (status === 'taken' && r() < .3) { status = 'premium'; premium = Math.round((800 + r() * 15000) / 50) * 50; }
-    return {name: slug + t, status, price: p, premium};
+    return {name: slug + t, status, price: p, premium, registrars: status === 'available' ? registrarsFor(t) : []};
   });
 
   return {

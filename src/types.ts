@@ -23,10 +23,16 @@ export interface Domain {
   price: number;
   /** Asking price when status is 'premium' */
   premium: number | null;
+  /** Where an available domain can be registered; empty unless status is 'available' */
+  registrars: RegistrarId[];
 }
 
+export type RegistrarId = 'cloudflare' | 'godaddy' | 'namecheap' | 'porkbun';
+
+export type Platform = 'x' | 'instagram' | 'tiktok' | 'linkedin' | 'github' | 'youtube';
+
 export interface Social {
-  ico: string;
+  platform: Platform;
   label: string;
   url: string;
   status: 'available' | 'taken' | 'inactive';
